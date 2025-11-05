@@ -1,17 +1,17 @@
-Key (Column A)	Example Value (Column B)	Notes
-name	Ahmed Maher	Your full name. (MANDATORY for app to load)
-title	Digital Portfolio Manager	Your job title or professional descriptor.
-mainImageUrl	https://example.com/profile.jpg	URL for your main profile picture.
-whatsappNumber	+1 (555) 123-4567	Your WhatsApp number. The code automatically creates the wa.me link from this.
-emailAddress	ahmed.maher@example.com	Your primary contact email address.
-qrCodeUrl	https://yourwebsite.com/vcard	The URL you want the QR code to point to (e.g., your LinkedIn, website, or vCard file).
-galleryImages	url1.jpg, url2.png, url3.gif	Comma-separated list of URLs for your scrollable image gallery.
-Linkdin	https://linkedin.com/in/ahmed	Full URL for LinkedIn.
-instagram	https://instagram.com/ahmed	Full URL for Instagram.
-behance	https://behance.net/ahmed	Full URL for Behance.
-youtube	https://youtube.com/@ahmed	Full URL for YouTube.
-facebook	https://facebook.com/ahmed	Full URL for Facebook.
-webLink1_text	My Personal Website	Text for your first generic web link.
-webLink1_href	https://mywebsite.com	URL for your first generic web link.
-webLink2_text	My Latest Project	Text for your second generic web link.
-webLink2_href	https://project.com	URL for your second generic web link.
+Key (Column A),Example Value (Column B),Notes,,,,,,,,,,,
+name,Ahmed Maher,Your full name. (MANDATORY for app to load),,,,,,,,,,,
+title,Digital Portfolio Manager,Your job title or professional descriptor.,,,,,,,,,,,
+mainImageUrl,https://example.com/profile.jpg,URL for your main profile picture.,,,,,,,,,,,
+whatsappNumber,+1 (555) 123-4567,Your WhatsApp number. The code automatically creates the wa.me link from this.,,,,,,,,,,,
+emailAddress,ahmed.maher@example.com,Your primary contact email address.,,,,,,,,,,,
+qrCodeUrl,https://yourwebsite.com/vcard,"The URL you want the QR code to point to (e.g., your LinkedIn, website, or vCard file).",,,,,,,,,,,
+galleryImages,"url1.jpg, url2.png, url3.gif",Comma-separated list of URLs for your scrollable image gallery.,,,,,,,,,,,
+Linkdin,https://linkedin.com/in/ahmed,Full URL for LinkedIn.,,,,,,,,,,,
+instagram,https://instagram.com/ahmed,Full URL for Instagram.,,,,,,,,,,,
+behance,https://behance.net/ahmed,Full URL for Behance.,,,,,,,,,,,
+youtube,https://youtube.com/@ahmed,Full URL for YouTube.,,,,,,,,,,,
+facebook,https://facebook.com/ahmed,Full URL for Facebook.,,,,,,,,,,,
+webLink1_text,My Personal Website,Text for your first generic web link.,,,,,,,,,,,
+webLink1_href,https://mywebsite.com,URL for your first generic web link.,,,,,,,,,,,
+webLink2_text,My Latest Project,Text for your second generic web link.,,,,,,,,,,,
+webLink2_href,https://project.com,URL for your second generic web link.,,,,,,,,,,,
