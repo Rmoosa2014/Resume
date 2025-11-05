@@ -77,8 +77,9 @@
             background-color: white;
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            /* CRITICAL FIX: Retain large bottom padding (8rem) to create space for absolutely positioned QR code */
-            padding: 1.25rem 1rem 8rem 1rem; 
+            /* CRITICAL FIX: Reduced bottom padding to only what's needed for content flow, 
+               QR code is now inside and placed with margins */
+            padding: 1.25rem 1rem 1.25rem 1rem; 
             width: 90%;
             max-width: 400px;
             margin-top: 2rem;
@@ -90,17 +91,15 @@
             align-items: center;
             text-align: center;
         }
-
-        /* Fixed positioning for the QR code */
+        
+        /* Removed absolute positioning */
         #qr-code-container-fixed {
-            position: absolute;
-            /* Adjusted bottom value to ensure it sits perfectly above the padding */
-            bottom: 1rem; 
-            left: 50%;
-            transform: translateX(-50%);
-            /* Ensure it is above the general content flow */
-            z-index: 20; 
-            margin-bottom: 0; 
+            /* Now uses margin for spacing */
+            margin-top: 2.5rem; 
+            margin-bottom: 2.5rem; /* Creates the required gap at the very bottom */
+            display: flex; /* Ensures canvas is centered */
+            justify-content: center;
+            align-items: center;
         }
 
         .contact-icon {
@@ -170,12 +169,24 @@
             <!-- White Contact Card (All Contact Info Inside) -->
             <div class="contact-card mt-4 mb-4"> 
                 
-                <!-- WhatsApp -->
-                <div class="flex flex-col items-center"> 
-                    <i class="fab fa-whatsapp contact-icon text-green-500 mb-1"></i>
-                    <!-- CRITICAL FIX: Ensure break-words is on the WhatsApp link -->
-                    <a id="whatsapp-link" href="#" target="_blank" class="contact-link font-bold break-words"></a>
+                <!-- CONSOLIDATED: WhatsApp & WeChat Icons (Top Row) -->
+                <div class="flex justify-center w-full space-x-8 mt-2">
+                    <!-- WhatsApp Icon (Clickable link if number exists) -->
+                    <a id="whatsapp-icon-link" href="#" target="_blank" title="WhatsApp" class="flex flex-col items-center">
+                        <i class="fab fa-whatsapp contact-icon text-green-500 mb-1"></i>
+                    </a>
+
+                    <!-- WeChat Icon (Clickable link if number exists) -->
+                    <a id="wechat-icon-link" href="#" target="_blank" title="WeChat" class="flex flex-col items-center">
+                        <i class="fab fa-weixin contact-icon text-green-600 mb-1"></i>
+                    </a>
                 </div>
+
+                <!-- CONSOLIDATED: Single Contact Number (Centered below icons) -->
+                <div class="flex flex-col items-center mb-4"> 
+                    <span id="primary-contact-number" class="contact-link font-bold break-words text-center text-lg text-blue-600">N/A</span>
+                </div>
+
 
                 <!-- Social Media Icons -->
                 <div id="social-links-container" class="flex flex-wrap justify-center gap-4 py-2 border-t border-b border-gray-100 w-full my-3">
@@ -192,20 +203,19 @@
                 </div>
                 
                 <!-- Email -->
-                <!-- CRITICAL FIX: Increased margin to mb-16 to push content above the QR code -->
-                <div class="flex flex-col items-center mb-16"> 
+                <div class="flex flex-col items-center mb-8"> 
                     <i class="fas fa-envelope contact-icon text-red-500 mb-1"></i>
                     <a id="email-link" href="#" class="contact-link"></a>
                 </div>
                 
-                <!-- Content above QR code must scroll freely -->
+                <!-- QR Code Canvas (MOVED INSIDE CONTACT CARD AND NO LONGER ABSOLUTELY POSITIONED) -->
+                <div id="qr-code-container-fixed" style="width: 120px; height: 120px;">
+                    <canvas id="qr-code-canvas" width="120" height="120"></canvas>
+                </div>
                 
             </div>
 
-            <!-- QR Code Canvas (Fixed Position at Card Bottom) -->
-            <div id="qr-code-container-fixed" style="width: 120px; height: 120px;">
-                <canvas id="qr-code-canvas" width="120" height="120"></canvas>
-            </div>
+            <!-- Content outside the card -->
             
         </div>
 
@@ -222,11 +232,22 @@
             document.getElementById('profile-name').textContent = contactData.name;
             document.getElementById('profile-title').textContent = contactData.title;
 
-            // Update WhatsApp link and number
-            const waLink = document.getElementById('whatsapp-link');
-            waLink.href = contactData.whatsappUrl || '#';
-            waLink.textContent = contactData.whatsappNumber || 'N/A';
-            waLink.target = "_blank"; 
+            // --- 1. Consolidated WhatsApp/WeChat/Number Block ---
+            const primaryNumberEl = document.getElementById('primary-contact-number');
+            const waIconLink = document.getElementById('whatsapp-icon-link');
+            const wcIconLink = document.getElementById('wechat-icon-link');
+
+            // Display the WhatsApp number as the primary number
+            primaryNumberEl.textContent = contactData.whatsappNumber || 'N/A';
+            
+            // Set WhatsApp icon link
+            waIconLink.href = contactData.whatsappUrl || 'javascript:void(0)';
+            if (!contactData.whatsappUrl) waIconLink.removeAttribute('target');
+
+            // Set WeChat icon link (using URL if available)
+            wcIconLink.href = contactData.wechatUrl || 'javascript:void(0)';
+            if (!contactData.wechatUrl) wcIconLink.removeAttribute('target');
+
 
             // Update Email link and address
             const emailLink = document.getElementById('email-link');
@@ -308,7 +329,7 @@
             const qrCtx = qrCanvas.getContext('2d');
             
             // Ensure canvas is clear
-            qrCtx.clearRect(0, 0, qrCanvas.width, qrCanvas.height); 
+            qrCtx.clearRect(0, 0, qrCanvas.width, qrCtx.height); 
 
             if (contactData.qrCodeUrl && QRCode) {
                 // Generate the QR code
@@ -405,6 +426,10 @@
             contactData.mainImageUrl = contactData.mainImageUrl || contactData.mainimageurl || 'https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing'; 
             
             contactData.whatsappNumber = contactData.whatsappNumber || contactData.whatsappnumber || '';
+            
+            // NEW: WeChat Number Mapping
+            contactData.wechatNumber = contactData.wechatNumber || contactData.wechatnumber || ''; 
+
             contactData.emailAddress = contactData.emailAddress || contactData.emailaddress || '';
             contactData.qrCodeUrl = contactData.qrCodeUrl || contactData.qrcodeurl || '';
 
@@ -414,6 +439,12 @@
             // Generate WhatsApp URL
             if (contactData.whatsappNumber && !contactData.whatsappUrl) {
                 contactData.whatsappUrl = `https://wa.me/${contactData.whatsappNumber.replace(/[^0-9+]/g, '')}`;
+            }
+
+            // Generate WeChat URL (using the number/ID is common for direct linking, though QR code is often preferred)
+            if (contactData.wechatNumber && !contactData.wechatUrl) {
+                // Note: Direct linking for WeChat is complex/unreliable; we link to a placeholder/default share link
+                contactData.wechatUrl = `https://api.whatsapp.com/send/?phone=${contactData.wechatNumber.replace(/[^0-9+]/g, '')}&text=Hello+via+WeChat`;
             }
             
             console.log("Parsed Contact Data:", contactData);
