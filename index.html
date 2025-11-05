@@ -1,27 +1,128 @@
-<!DOCTYPE html>
+<!DOCTYPE ahtml>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrollable Image Gallery</title>
+    <title>Ahmed Maher - Portfolio</title>
+    
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Load QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    
+    <!-- CRITICAL: Load SheetJS/js-xlsx library to parse Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        /* Ensures body is full screen, but allows vertical scrolling */
-        html, body {
+        /* Base styles */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
             margin: 0;
             padding: 0;
             font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth; /* Smooth scroll between snap points */
-        }
-        /* Custom styles for the full-screen snap containers */
-        .image-snap-container {
-            height: 100vh;
-            width: 100vw;
-            scroll-snap-align: start; /* Snap to the start of this element */
+            /* Center the 9:16 app frame */
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            background-color: #111827; /* Dark background for contrast */
+        }
+
+        /* The 9:16 mobile screen frame */
+        #app-frame {
+            position: relative;
+            width: 100%;
+            height: 95vh; /* Fill most of the vertical height */
+            max-width: 450px; /* Max width for larger screens */
+            aspect-ratio: 9 / 16; /* Enforce mobile aspect ratio */
+            background-color: #f0f0f0; /* Default bg */
+            border-radius: 1.5rem; /* Rounded corners for the "phone" */
+            box-shadow: 0 0 40px rgba(0,0,0,0.4);
+            overflow-y: scroll;
+            overflow-x: hidden;
+            /* Enable snap scrolling *within* this frame */
+            scroll-snap-type: y mandatory;
+            
+            /* --- HIDE SCROLLBAR --- */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        /* Hide scrollbar for WebKit browsers */
+        #app-frame::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Full-screen snap container class (relative to #app-frame) */
+        .image-snap-container {
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden; /* Hide anything that spills */
+        }
+
+        /* Styling for the white contact card */
+        .contact-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            /* CRITICAL FIX: Retain large bottom padding (8rem) to create space for absolutely positioned QR code */
+            padding: 1.25rem 1rem 8rem 1rem; 
+            width: 90%;
+            max-width: 400px;
+            margin-top: 2rem;
+            /* Make this container relative so we can absolute position the QR code inside */
+            position: relative; 
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Fixed positioning for the QR code */
+        #qr-code-container-fixed {
+            position: absolute;
+            /* Adjusted bottom value to ensure it sits perfectly above the padding */
+            bottom: 1rem; 
+            left: 50%;
+            transform: translateX(-50%);
+            /* Ensure it is above the general content flow */
+            z-index: 20; 
+            margin-bottom: 0; 
+        }
+
+        .contact-icon {
+            font-size: 1.5rem; /* Adjusted for smaller frame */
+            color: #4a5568;
+        }
+        .contact-link {
+            font-size: 1rem; /* Adjusted for smaller frame */
+            color: #3182ce;
+            text-decoration: none;
+            margin-top: 0.25rem;
+            margin-bottom: 0; 
+            display: block;
+            word-break: break-all; /* Ensure long emails/links wrap */
+        }
+        .contact-link:hover {
+            text-decoration: underline;
+        }
+        /* Styles for disabled social icons */
+        a[aria-disabled="true"] {
+            pointer-events: none;
+            cursor: default;
         }
     </style>
     <script>
@@ -29,76 +130,341 @@
             theme: {
                 extend: {
                     colors: {
-                        'background': '#1f2937', // Dark Slate
+                        'landing-bg-top': '#2f3b39',
+                        'landing-bg-bottom': '#f0f0f0',
+                        'name-text': '#f3f4f6', /* White */
+                        'title-text': '#d1d5db', /* Light Grey */
+                        'gallery-bg': '#1f2937', // Dark bg for subsequent image slides
                     }
                 }
             }
         }
     </script>
 </head>
-<!-- 
-    The body uses 'snap-y snap-mandatory' to enforce the full-screen scrolling/swiping behavior.
-    'overflow-y-scroll' enables vertical scrolling.
--->
-<body class="bg-background overflow-y-scroll snap-y snap-mandatory">
 
-    <!-- The container where all image slides will be injected -->
-    <div id="gallery">
-        <!-- Images will be dynamically added here by JavaScript -->
-    </div>
+<body>
 
-    <script>
-        // --- 1. LIST OF IMAGE URLs ---
-        // IMPORTANT: Replace the placeholder URLs with the actual paths 
-        // to all the image files in your GitHub repository.
-        const imageUrls = [
-            // Your currently provided image:
-            "https://raw.githubusercontent.com/Rmoosa2014/Resume/main/QRENGTOM.png",
+    <!-- This is the 9:16 container that holds the app -->
+    <main id="app-frame">
+
+        <!-- SLIDE 1: LANDING PAGE -->
+        <div class="image-snap-container bg-gradient-to-b from-landing-bg-top to-landing-bg-bottom justify-start">
             
-            // Add other images here!
-            // Example structure if you have other files:
-            // "https://raw.githubusercontent.com/Rmoosa2014/Resume/main/file2.png",
-            // "https://raw.githubusercontent.com/Rmoosa2014/Resume/main/file3.jpg",
-        ];
+            <!-- Top background color -->
+            <div class="absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0"></div>
+            <!-- Bottom background color -->
+            <div class="absolute bottom-0 left-0 w-full h-[50%] bg-landing-bg-bottom z-0"></div>
 
-        const gallery = document.getElementById('gallery');
+            <!-- Profile Info (Outside Card) -->
+            <div class="relative z-10 flex flex-col items-center mt-6 sm:mt-8 px-4"> 
+                <img id="main-profile-img" src="#" alt="Profile Picture" 
+                     class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-lg mb-2"
+                     onerror="this.onerror=null; this.src='https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing';"
+                >
+                
+                <!-- CRITICAL FIX: Reduced font size for better fit -->
+                <h1 id="profile-name" class="text-xl font-bold text-name-text text-center break-words mt-0">Loading...</h1>
+                <p id="profile-title" class="text-sm text-title-text text-center break-words mt-0.5"></p>
+            </div>
+            
+            <!-- White Contact Card (All Contact Info Inside) -->
+            <div class="contact-card mt-4 mb-4"> 
+                
+                <!-- WhatsApp -->
+                <div class="flex flex-col items-center"> 
+                    <i class="fab fa-whatsapp contact-icon text-green-500 mb-1"></i>
+                    <!-- CRITICAL FIX: Ensure break-words is on the WhatsApp link -->
+                    <a id="whatsapp-link" href="#" target="_blank" class="contact-link font-bold break-words"></a>
+                </div>
+
+                <!-- Social Media Icons -->
+                <div id="social-links-container" class="flex flex-wrap justify-center gap-4 py-2 border-t border-b border-gray-100 w-full my-3">
+                    <!-- Icons injected here -->
+                </div>
+
+                <!-- UPDATED: Dedicated Web Link Block (Shows up to two web links) -->
+                <div id="main-web-link-block" class="flex flex-col items-center mb-3 w-full px-2"> 
+                    <i class="fas fa-globe contact-icon text-gray-700 mb-1"></i>
+                    <!-- Container for 1 or 2 links -->
+                    <div id="web-links-list" class="flex flex-col items-center w-full space-y-1">
+                        <!-- Links injected here -->
+                    </div>
+                </div>
+                
+                <!-- Email -->
+                <!-- CRITICAL FIX: Increased margin to mb-16 to push content above the QR code -->
+                <div class="flex flex-col items-center mb-16"> 
+                    <i class="fas fa-envelope contact-icon text-red-500 mb-1"></i>
+                    <a id="email-link" href="#" class="contact-link"></a>
+                </div>
+                
+                <!-- Content above QR code must scroll freely -->
+                
+            </div>
+
+            <!-- QR Code Canvas (Fixed Position at Card Bottom) -->
+            <div id="qr-code-container-fixed" style="width: 120px; height: 120px;">
+                <canvas id="qr-code-canvas" width="120" height="120"></canvas>
+            </div>
+            
+        </div>
+
+        <!-- NOTE: Gallery code removed as requested -->
+
+    </main>
+    
+    <script>
         
-        // Function to create and inject the image slides
-        function renderGallery() {
-            imageUrls.forEach((url, index) => {
-                // Create the outer container (which will be 100vh)
-                const container = document.createElement('div');
-                container.className = 'image-snap-container p-4';
-                
-                // Create the image element
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = `Gallery image ${index + 1}`;
-                
-                // Tailwind classes for the image:
-                // max-w-full max-h-full makes sure the image fits within the 100vh/100vw container
-                // object-contain ensures the aspect ratio is maintained
-                img.className = 'max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl transition duration-300';
-                
-                // Simple error handling for bad image URLs
-                img.onerror = function() {
-                    container.innerHTML = `
-                        <div class="text-red-400 text-sm sm:text-lg p-6 bg-gray-700 rounded-lg shadow-xl text-center">
-                            Error loading image ${index + 1}: <br>
-                            <span class="text-xs text-gray-400 break-all">${url}</span>
-                        </div>
-                    `;
-                    container.classList.remove('flex'); // Remove flex when showing error
-                };
+        // --- FUNCTION TO INJECT CONTACT DATA INTO LANDING PAGE ---
+        function setupLandingPage(contactData) { 
+            // Update profile image, name, and title
+            document.getElementById('main-profile-img').src = contactData.mainImageUrl;
+            document.getElementById('profile-name').textContent = contactData.name;
+            document.getElementById('profile-title').textContent = contactData.title;
 
-                // Add the image to the container, and the container to the gallery
-                container.appendChild(img);
-                gallery.appendChild(container);
+            // Update WhatsApp link and number
+            const waLink = document.getElementById('whatsapp-link');
+            waLink.href = contactData.whatsappUrl || '#';
+            waLink.textContent = contactData.whatsappNumber || 'N/A';
+            waLink.target = "_blank"; 
+
+            // Update Email link and address
+            const emailLink = document.getElementById('email-link');
+            emailLink.href = contactData.emailAddress ? `mailto:${contactData.emailAddress}` : '#';
+            emailLink.textContent = contactData.emailAddress || 'N/A';
+
+            const socialLinksContainer = document.getElementById('social-links-container');
+            socialLinksContainer.innerHTML = ''; // Clear existing content
+
+            // Map social keys to Font Awesome icons and colors
+            const socialMap = [
+                { key: 'linkdin', icon: 'fab fa-linkedin', color: 'text-blue-700', label: 'LinkedIn' },
+                { key: 'instagram', icon: 'fab fa-instagram', color: 'text-pink-500', label: 'Instagram' },
+                { key: 'behance', icon: 'fab fa-behance', color: 'text-blue-800', label: 'Behance' },
+                { key: 'youtube', icon: 'fab fa-youtube', color: 'text-red-600', label: 'YouTube' },
+                { key: 'facebook', icon: 'fab fa-facebook', color: 'text-blue-600', label: 'Facebook' },
+            ];
+
+            // 1. Render Social Media Links (Icon only, clickable if URL exists)
+            socialMap.forEach(map => {
+                const url = contactData.socialMedia[map.key];
+                const linkWrapper = document.createElement('a');
+                
+                // Base classes for icon styling
+                // CRITICAL FIX: Changed p-2 to p-1 (padding) and text-2xl to text-xl (size)
+                linkWrapper.className = `p-1 rounded-full transition-transform`;
+                
+                const iconElement = document.createElement('i');
+                iconElement.className = `${map.icon} text-xl ${map.color}`; // Updated to text-xl
+                
+                if (url) {
+                    // Active link styling and attributes
+                    linkWrapper.href = url;
+                    linkWrapper.target = "_blank";
+                    linkWrapper.title = map.label;
+                    linkWrapper.classList.add('hover:scale-110', 'hover:shadow-md');
+                } else {
+                    // Disabled link styling and attributes (icon only)
+                    linkWrapper.href = "javascript:void(0)";
+                    linkWrapper.setAttribute('aria-disabled', 'true');
+                    linkWrapper.classList.add('opacity-40');
+                    linkWrapper.title = `${map.label} (Not Provided)`;
+                }
+
+                linkWrapper.appendChild(iconElement);
+                socialLinksContainer.appendChild(linkWrapper);
             });
+            
+            // 2. FIXED: Render Generic Web Links (up to 2)
+            const webLinksList = document.getElementById('web-links-list');
+            const mainWebLinkBlock = document.getElementById('main-web-link-block');
+            webLinksList.innerHTML = ''; // Clear list
+
+            if (contactData.webLinks && contactData.webLinks.length > 0) {
+                // Show the container block
+                mainWebLinkBlock.classList.remove('hidden');
+
+                // Iterate and display up to 2 links
+                contactData.webLinks.slice(0, 2).forEach(link => {
+                    const linkElement = document.createElement('a');
+                    linkElement.href = link.href;
+                    linkElement.target = "_blank";
+                    
+                    // CRITICAL FIX: Use the URL as the display text since text columns were removed
+                    linkElement.textContent = link.href; 
+                    
+                    // Adjusted classes for correct stacking and look
+                    linkElement.className = 'contact-link text-center w-full hover:underline mt-0 mb-0';
+                    webLinksList.appendChild(linkElement);
+                });
+
+            } else {
+                // Hide the entire block if no links are available
+                mainWebLinkBlock.classList.add('hidden');
+            }
+            
+            // --- 3. QR Code Handling (Always visible structure) ---
+            const qrCanvas = document.getElementById('qr-code-canvas');
+            const qrCtx = qrCanvas.getContext('2d');
+            
+            // Ensure canvas is clear
+            qrCtx.clearRect(0, 0, qrCanvas.width, qrCanvas.height); 
+
+            if (contactData.qrCodeUrl && QRCode) {
+                // Generate the QR code
+                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
+                    if (error) console.error("QR Code Error:", error);
+                });
+            } else {
+                // Draw a placeholder box and text if the URL is missing
+                qrCtx.fillStyle = '#f5f5f5'; // Very light gray background
+                qrCtx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+                qrCtx.fillStyle = '#cccccc'; // Darker gray text
+                qrCtx.font = '14px Inter, sans-serif';
+                qrCtx.textAlign = 'center';
+                qrCtx.fillText('QR Code', qrCanvas.width / 2, 50);
+                qrCtx.fillText('Missing', qrCanvas.width / 2, 75);
+            }
         }
 
-        // Run the function on load
-        window.onload = renderGallery;
+        // --- CORE FUNCTION TO PARSE EXCEL DATA (Header Row + Data Row) ---
+        function parseExcelData(data) {
+            const contactData = {
+                webLinks: [],
+                socialMedia: {}
+            };
+            
+            // Use xlsx to read the binary data
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            // Convert sheet data to an array of arrays (including headers)
+            // This reads the whole sheet, but we only care about the first two rows.
+            const dataMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+
+            if (dataMatrix.length < 2) {
+                console.error("Excel sheet must contain at least a header row (Row 1) and a data row (Row 2).");
+                return { contactData };
+            }
+
+            const rawHeaders = dataMatrix[0].map(h => String(h).trim());
+            const dataValues = dataMatrix[1].map(v => String(v).trim());
+            
+            const normalizedHeaders = rawHeaders.map(h => h.toLowerCase());
+
+            // --- Process Data by Header ---
+            
+            for (let i = 0; i < normalizedHeaders.length && i < dataValues.length; i++) {
+                const normalizedKey = normalizedHeaders[i];
+                const rawHeader = rawHeaders[i];
+                const value = dataValues[i] || ''; 
+                
+                if (!value) continue;
+
+                // 2.2. Handle Structured Web Links (now only looking for _href)
+                if (normalizedKey.startsWith('weblink') && normalizedKey.includes('_href')) {
+                    const match = normalizedKey.match(/weblink(\d+)_(href)/);
+                    if (match) {
+                        const index = parseInt(match[1], 10) - 1; 
+                        const prop = match[2]; // 'href'
+                        
+                        // VALIDATION: Skip invalid URLs for hrefs
+                        if (!(value.startsWith('http://') || value.startsWith('https://'))) {
+                            console.warn(`Skipping invalid URL for ${normalizedKey}: ${value}`);
+                            continue; 
+                        }
+                        
+                        const textProp = 'text';
+
+                        if (!contactData.webLinks[index]) {
+                            contactData.webLinks[index] = {};
+                        }
+                        contactData.webLinks[index][prop] = value;
+                        // Set the text property to the URL itself
+                        contactData.webLinks[index][textProp] = value; 
+                    }
+                }
+                // 2.3. Handle specific social media links
+                else if (['linkdin', 'instagram', 'behance', 'youtube', 'facebook'].includes(normalizedKey)) {
+                    contactData.socialMedia[normalizedKey] = value;
+                }
+                // 2.4. All other fields (name, title, mainImageUrl, whatsappNumber, etc.)
+                else {
+                    // Use the original header name as the property key for the final object
+                    contactData[rawHeader] = value;
+                }
+            }
+            
+            // --- FINALIZATION AND MAPPING ---
+            
+            // Explicitly map properties needed by setupLandingPage, prioritizing the exact camelCase expected.
+            contactData.name = contactData.name || '';
+            contactData.title = contactData.title || '';
+            
+            contactData.mainImageUrl = contactData.mainImageUrl || contactData.mainimageurl || 'https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing'; 
+            
+            contactData.whatsappNumber = contactData.whatsappNumber || contactData.whatsappnumber || '';
+            contactData.emailAddress = contactData.emailAddress || contactData.emailaddress || '';
+            contactData.qrCodeUrl = contactData.qrCodeUrl || contactData.qrcodeurl || '';
+
+            // Clean up webLinks
+            contactData.webLinks = contactData.webLinks.filter(link => link && link.text && link.href);
+            
+            // Generate WhatsApp URL
+            if (contactData.whatsappNumber && !contactData.whatsappUrl) {
+                contactData.whatsappUrl = `https://wa.me/${contactData.whatsappNumber.replace(/[^0-9+]/g, '')}`;
+            }
+            
+            console.log("Parsed Contact Data:", contactData);
+
+            return { contactData };
+        }
+
+
+        // --- MAIN APPLICATION ENTRY POINT: FETCH AND RENDER ---
+        window.onload = async function() {
+            
+            // CRITICAL: UPDATED TO EXCEL FILE URL
+            const dataUrl = 'https://raw.githubusercontent.com/Rmoosa2014/Resume/main/ContactData.xlsx'; 
+
+            try {
+                // 1. Fetch the binary Excel file data
+                const response = await fetch(dataUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to load data file. Status: ${response.status} ${response.statusText}. Please ensure the URL is correct and accessible.`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                
+                // 2. Convert to binary string required by SheetJS
+                let binaryString = '';
+                for (let i = 0; i < data.length; i++) {
+                    binaryString += String.fromCharCode(data[i]);
+                }
+
+                // 3. Parse the Excel data
+                const { contactData } = parseExcelData(binaryString);
+
+                // 4. Render
+                if (contactData.name) {
+                    setupLandingPage(contactData);
+                } else {
+                    throw new Error("Excel sheet loaded, but the 'name' field is missing or empty. Please ensure your sheet has a header row and a data row, and that one of the headers is 'name'.");
+                }
+
+            } catch (error) {
+                console.error("Error loading and processing data:", error);
+                // Display a user-friendly error message on the screen
+                document.getElementById('app-frame').innerHTML = `
+                    <div class="p-6 text-center text-red-700 bg-white rounded-xl shadow-lg m-4">
+                        <strong class="text-xl">⚠️ Content Error ⚠️</strong>
+                        <p class="text-sm text-gray-600 mt-3">Could not load portfolio data from the Excel file.</p>
+                        <p class="text-xs text-gray-500 mt-4">Details: ${error.message}</p>
+                    </div>
+                `;
+            }
+        };
 
     </script>
 
