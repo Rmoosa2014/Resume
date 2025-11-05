@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Screen Map Preview</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensure the HTML and Body elements occupy the full height */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling if the image slightly exceeds dimensions */
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#1f2937', // Dark Slate
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background h-screen w-screen flex items-center justify-center p-2 sm:p-4">
+
+    <!-- Main Image Container -->
+    <div id="imageContainer" class="max-w-full max-h-full flex items-center justify-center">
+        <img
+            id="previewImage"
+            src="https://raw.githubusercontent.com/Rmoosa2014/vr-tour/main/MAP01.png"
+            alt="Map Preview"
+            class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl transition duration-300 transform hover:scale-[1.01]"
+            onerror="document.getElementById('imageContainer').innerHTML = '<div class=\'text-red-400 text-lg p-6 bg-gray-700 rounded-lg shadow-xl\'>Error loading image. Please check the URL.</div>';"
+        >
+    </div>
+
+</body>
+</html>
