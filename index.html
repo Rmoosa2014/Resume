@@ -124,12 +124,13 @@
             cursor: default;
         }
     </style>
-    <script>
+    <script id="tailwind-config">
+        // Default color is #0269a6
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'landing-bg-top': '#2f3b39',
+                        'landing-bg-top': '#0269a6', 
                         'landing-bg-bottom': '#f0f0f0',
                         'name-text': '#f3f4f6', /* White */
                         'title-text': '#d1d5db', /* Light Grey */
@@ -147,10 +148,12 @@
     <main id="app-frame">
 
         <!-- SLIDE 1: LANDING PAGE -->
-        <div class="image-snap-container bg-gradient-to-b from-landing-bg-top to-landing-bg-bottom justify-start">
+        <div id="landing-page-container" class="image-snap-container bg-gradient-to-b from-landing-bg-top to-landing-bg-bottom justify-start">
             
-            <!-- Top background color -->
-            <div class="absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0"></div>
+            <!-- Top background color/image container -->
+            <div id="landing-bg-top-container" class="absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0">
+                <!-- Image will be inserted here if background is a URL -->
+            </div>
             <!-- Bottom background color -->
             <div class="absolute bottom-0 left-0 w-full h-[50%] bg-landing-bg-bottom z-0"></div>
 
@@ -171,20 +174,23 @@
                 
                 <!-- CONSOLIDATED: WhatsApp & WeChat Icons (Top Row) -->
                 <div class="flex justify-center w-full space-x-8 mt-2">
-                    <!-- WhatsApp Icon (Clickable link if number exists) -->
-                    <a id="whatsapp-icon-link" href="#" target="_blank" title="WhatsApp" class="flex flex-col items-center">
+                    <!-- WhatsApp Icon (Clickable link for CHAT) -->
+                    <a id="whatsapp-icon-link" href="#" target="_blank" title="WhatsApp Chat" class="flex flex-col items-center">
                         <i class="fab fa-whatsapp contact-icon text-green-500 mb-1"></i>
                     </a>
 
-                    <!-- WeChat Icon (Clickable link if number exists) -->
-                    <a id="wechat-icon-link" href="#" target="_blank" title="WeChat" class="flex flex-col items-center">
+                    <!-- WeChat Icon (Clickable link for CHAT) -->
+                    <a id="wechat-icon-link" href="#" target="_blank" title="WeChat Chat" class="flex flex-col items-center">
                         <i class="fab fa-weixin contact-icon text-green-600 mb-1"></i>
                     </a>
                 </div>
 
-                <!-- CONSOLIDATED: Single Contact Number (Centered below icons) -->
+                <!-- CONSOLIDATED: Single Contact Number (Centered below icons, CLICKABLE FOR CALL) -->
                 <div class="flex flex-col items-center mb-4"> 
-                    <span id="primary-contact-number" class="contact-link font-bold break-words text-center text-lg text-blue-600">N/A</span>
+                    <!-- CRITICAL FIX: Wrapped number in <a> with tel: protocol -->
+                    <a id="primary-contact-number-link" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600">
+                        <span id="primary-contact-number">N/A</span>
+                    </a>
                 </div>
 
 
@@ -225,26 +231,77 @@
     
     <script>
         
+        // --- FUNCTION TO DYNAMICALLY UPDATE TAILWIND CONFIG AND RELOAD ---
+        function setTopBgColor(color) {
+            const configScript = document.getElementById('tailwind-config');
+            if (!configScript) return;
+
+            // Update the script content with the new color
+            let newConfig = configScript.textContent;
+            newConfig = newConfig.replace(/'landing-bg-top': '#0269a6'/, `'landing-bg-top': '${color}'`);
+
+            configScript.textContent = newConfig;
+
+            // Re-run Tailwind to pick up the new color definition
+            if (typeof tailwind !== 'undefined' && tailwind.config) {
+                 // Note: In a real environment, you'd re-initialize or trigger a JIT update.
+                 // For this single-file setup, we rely on the class being defined.
+            }
+        }
+
+
         // --- FUNCTION TO INJECT CONTACT DATA INTO LANDING PAGE ---
         function setupLandingPage(contactData) { 
-            // Update profile image, name, and title
+            // ----------------------------------------------------
+            // 1. DYNAMIC BACKGROUND LOGIC (NEW)
+            // ----------------------------------------------------
+            const bgContainer = document.getElementById('landing-bg-top-container');
+            const newBgValue = contactData.landingBgTop || '#0269a6';
+            
+            const isUrl = newBgValue.startsWith('http') || newBgValue.startsWith('/');
+
+            if (isUrl) {
+                // If it's a URL, replace the container div content with an image
+                bgContainer.innerHTML = `
+                    <img src="${newBgValue}" 
+                         alt="Background image" 
+                         class="w-full h-full object-cover">
+                `;
+            } else {
+                // If it's a color, update the Tailwind config
+                setTopBgColor(newBgValue);
+                // Ensure the container is a div and uses the Tailwind class
+                bgContainer.innerHTML = '';
+                bgContainer.className = 'absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0';
+            }
+
+
+            // ----------------------------------------------------
+            // 2. PROFILE & CONTACT SETUP
+            // ----------------------------------------------------
             document.getElementById('main-profile-img').src = contactData.mainImageUrl;
             document.getElementById('profile-name').textContent = contactData.name;
             document.getElementById('profile-title').textContent = contactData.title;
 
-            // --- 1. Consolidated WhatsApp/WeChat/Number Block ---
+            // --- Consolidated WhatsApp/WeChat/Number Block ---
             const primaryNumberEl = document.getElementById('primary-contact-number');
+            const primaryNumberLink = document.getElementById('primary-contact-number-link');
             const waIconLink = document.getElementById('whatsapp-icon-link');
             const wcIconLink = document.getElementById('wechat-icon-link');
 
-            // Display the WhatsApp number as the primary number
+            // Display the formatted WhatsApp number
             primaryNumberEl.textContent = contactData.whatsappNumber || 'N/A';
             
-            // Set WhatsApp icon link
+            // Set primary link for CALLING (tel: protocol)
+            const callingNumber = contactData.whatsappNumber.replace(/[^0-9+]/g, '');
+            primaryNumberLink.href = `tel:${callingNumber}`;
+            primaryNumberLink.title = `Call ${contactData.whatsappNumber}`;
+
+            // Set WhatsApp icon link for CHATTING (wa.me)
             waIconLink.href = contactData.whatsappUrl || 'javascript:void(0)';
             if (!contactData.whatsappUrl) waIconLink.removeAttribute('target');
 
-            // Set WeChat icon link (using URL if available)
+            // Set WeChat icon link for CHATTING (WeChat URL)
             wcIconLink.href = contactData.wechatUrl || 'javascript:void(0)';
             if (!contactData.wechatUrl) wcIconLink.removeAttribute('target');
 
@@ -266,26 +323,22 @@
                 { key: 'facebook', icon: 'fab fa-facebook', color: 'text-blue-600', label: 'Facebook' },
             ];
 
-            // 1. Render Social Media Links (Icon only, clickable if URL exists)
+            // Render Social Media Links
             socialMap.forEach(map => {
                 const url = contactData.socialMedia[map.key];
                 const linkWrapper = document.createElement('a');
                 
-                // Base classes for icon styling
-                // CRITICAL FIX: Changed p-2 to p-1 (padding) and text-2xl to text-xl (size)
                 linkWrapper.className = `p-1 rounded-full transition-transform`;
                 
                 const iconElement = document.createElement('i');
-                iconElement.className = `${map.icon} text-xl ${map.color}`; // Updated to text-xl
+                iconElement.className = `${map.icon} text-xl ${map.color}`; 
                 
                 if (url) {
-                    // Active link styling and attributes
                     linkWrapper.href = url;
                     linkWrapper.target = "_blank";
                     linkWrapper.title = map.label;
                     linkWrapper.classList.add('hover:scale-110', 'hover:shadow-md');
                 } else {
-                    // Disabled link styling and attributes (icon only)
                     linkWrapper.href = "javascript:void(0)";
                     linkWrapper.setAttribute('aria-disabled', 'true');
                     linkWrapper.classList.add('opacity-40');
@@ -296,51 +349,43 @@
                 socialLinksContainer.appendChild(linkWrapper);
             });
             
-            // 2. FIXED: Render Generic Web Links (up to 2)
+            // Render Generic Web Links (up to 2)
             const webLinksList = document.getElementById('web-links-list');
             const mainWebLinkBlock = document.getElementById('main-web-link-block');
             webLinksList.innerHTML = ''; // Clear list
 
             if (contactData.webLinks && contactData.webLinks.length > 0) {
-                // Show the container block
                 mainWebLinkBlock.classList.remove('hidden');
 
-                // Iterate and display up to 2 links
                 contactData.webLinks.slice(0, 2).forEach(link => {
                     const linkElement = document.createElement('a');
                     linkElement.href = link.href;
                     linkElement.target = "_blank";
-                    
-                    // CRITICAL FIX: Use the URL as the display text since text columns were removed
                     linkElement.textContent = link.href; 
-                    
-                    // Adjusted classes for correct stacking and look
                     linkElement.className = 'contact-link text-center w-full hover:underline mt-0 mb-0';
                     webLinksList.appendChild(linkElement);
                 });
 
             } else {
-                // Hide the entire block if no links are available
                 mainWebLinkBlock.classList.add('hidden');
             }
             
-            // --- 3. QR Code Handling (Always visible structure) ---
+            // --- QR Code Handling ---
             const qrCanvas = document.getElementById('qr-code-canvas');
             const qrCtx = qrCanvas.getContext('2d');
             
-            // Ensure canvas is clear
             qrCtx.clearRect(0, 0, qrCanvas.width, qrCtx.height); 
 
             if (contactData.qrCodeUrl && QRCode) {
                 // Generate the QR code
-                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 150, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
+                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
                     if (error) console.error("QR Code Error:", error);
                 });
             } else {
                 // Draw a placeholder box and text if the URL is missing
-                qrCtx.fillStyle = '#f5f5f5'; // Very light gray background
+                qrCtx.fillStyle = '#f5f5f5'; 
                 qrCtx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
-                qrCtx.fillStyle = '#cccccc'; // Darker gray text
+                qrCtx.fillStyle = '#cccccc'; 
                 qrCtx.font = '14px Inter, sans-serif';
                 qrCtx.textAlign = 'center';
                 qrCtx.fillText('QR Code', qrCanvas.width / 2, 50);
@@ -361,7 +406,6 @@
             const sheet = workbook.Sheets[sheetName];
 
             // Convert sheet data to an array of arrays (including headers)
-            // This reads the whole sheet, but we only care about the first two rows.
             const dataMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
             if (dataMatrix.length < 2) {
@@ -379,73 +423,88 @@
             for (let i = 0; i < normalizedHeaders.length && i < dataValues.length; i++) {
                 const normalizedKey = normalizedHeaders[i];
                 const rawHeader = rawHeaders[i];
-                const value = dataValues[i] || ''; 
+                let value = dataValues[i] || ''; 
                 
                 if (!value) continue;
 
-                // 2.2. Handle Structured Web Links (now only looking for _href)
+                // 2.1. Handle Structured Web Links (now only looking for _href)
                 if (normalizedKey.startsWith('weblink') && normalizedKey.includes('_href')) {
                     const match = normalizedKey.match(/weblink(\d+)_(href)/);
                     if (match) {
                         const index = parseInt(match[1], 10) - 1; 
                         const prop = match[2]; // 'href'
                         
-                        // VALIDATION: Skip invalid URLs for hrefs
                         if (!(value.startsWith('http://') || value.startsWith('https://'))) {
                             console.warn(`Skipping invalid URL for ${normalizedKey}: ${value}`);
                             continue; 
                         }
                         
-                        const textProp = 'text';
-
                         if (!contactData.webLinks[index]) {
                             contactData.webLinks[index] = {};
                         }
                         contactData.webLinks[index][prop] = value;
-                        // Set the text property to the URL itself
-                        contactData.webLinks[index][textProp] = value; 
+                        contactData.webLinks[index]['text'] = value; 
                     }
                 }
-                // 2.3. Handle specific social media links
+                // 2.2. Handle specific social media links
                 else if (['linkdin', 'instagram', 'behance', 'youtube', 'facebook'].includes(normalizedKey)) {
                     contactData.socialMedia[normalizedKey] = value;
                 }
-                // 2.4. All other fields (name, title, mainImageUrl, whatsappNumber, etc.)
+                // 2.3. All other fields (name, title, mainImageUrl, whatsappNumber, etc.)
                 else {
                     // Use the original header name as the property key for the final object
                     contactData[rawHeader] = value;
+                }
+                
+                // 2.4. SPECIAL: Landing BG Top (Assuming Column O is the 15th column, index 14)
+                if (i === 14) { 
+                    contactData.landingBgTop = value;
                 }
             }
             
             // --- FINALIZATION AND MAPPING ---
             
-            // Explicitly map properties needed by setupLandingPage, prioritizing the exact camelCase expected.
             contactData.name = contactData.name || '';
             contactData.title = contactData.title || '';
-            
             contactData.mainImageUrl = contactData.mainImageUrl || contactData.mainimageurl || 'https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing'; 
             
-            contactData.whatsappNumber = contactData.whatsappNumber || contactData.whatsappnumber || '';
+            let rawWhatsappNumber = contactData.whatsappNumber || contactData.whatsappnumber || '';
             
-            // NEW: WeChat Number Mapping
+            // NEW: FORMAT WHATSAPP NUMBER (+ country code)
+            if (rawWhatsappNumber) {
+                // Clean the number (remove all non-digit characters except + if present)
+                let cleanedNumber = rawWhatsappNumber.replace(/[^0-9]/g, '');
+                
+                // Prepend '+' if it doesn't already start with a '+'
+                if (!rawWhatsappNumber.startsWith('+')) {
+                    cleanedNumber = '+' + cleanedNumber;
+                }
+                
+                // Example formatting for display: +966 5355 31913
+                // This is a simple cosmetic format; the actual link uses the raw clean number.
+                
+                // Attempt to reformat for display (assumes SA code 966)
+                if (cleanedNumber.length >= 10 && cleanedNumber.startsWith('+966')) {
+                    // +966 5355 31913 (4 digits + 4 digits + 4 digits)
+                    contactData.whatsappNumber = `${cleanedNumber.substring(0, 4)} ${cleanedNumber.substring(4, 8)} ${cleanedNumber.substring(8)}`;
+                } else {
+                    contactData.whatsappNumber = cleanedNumber; // Use clean version if format is unknown
+                }
+                
+                // CRITICAL: The URL uses the clean number without spaces or +
+                contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
+            } else {
+                contactData.whatsappNumber = '';
+            }
+            
             contactData.wechatNumber = contactData.wechatNumber || contactData.wechatnumber || ''; 
+            // Note: Direct WeChat linking is difficult, using a general share link as a fallback
+            contactData.wechatUrl = contactData.wechatNumber ? `weixin://dl/chat?${contactData.wechatNumber}` : ''; 
 
             contactData.emailAddress = contactData.emailAddress || contactData.emailaddress || '';
             contactData.qrCodeUrl = contactData.qrCodeUrl || contactData.qrcodeurl || '';
 
-            // Clean up webLinks
             contactData.webLinks = contactData.webLinks.filter(link => link && link.text && link.href);
-            
-            // Generate WhatsApp URL
-            if (contactData.whatsappNumber && !contactData.whatsappUrl) {
-                contactData.whatsappUrl = `https://wa.me/${contactData.whatsappNumber.replace(/[^0-9+]/g, '')}`;
-            }
-
-            // Generate WeChat URL (using the number/ID is common for direct linking, though QR code is often preferred)
-            if (contactData.wechatNumber && !contactData.wechatUrl) {
-                // Note: Direct linking for WeChat is complex/unreliable; we link to a placeholder/default share link
-                contactData.wechatUrl = `https://api.whatsapp.com/send/?phone=${contactData.wechatNumber.replace(/[^0-9+]/g, '')}&text=Hello+via+WeChat`;
-            }
             
             console.log("Parsed Contact Data:", contactData);
 
@@ -456,7 +515,6 @@
         // --- MAIN APPLICATION ENTRY POINT: FETCH AND RENDER ---
         window.onload = async function() {
             
-            // CRITICAL: UPDATED TO EXCEL FILE URL
             const dataUrl = 'https://raw.githubusercontent.com/Rmoosa2014/Resume/main/ContactData.xlsx'; 
 
             try {
