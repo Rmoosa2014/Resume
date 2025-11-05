@@ -333,7 +333,7 @@
 
             if (contactData.qrCodeUrl && QRCode) {
                 // Generate the QR code
-                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
+                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 150, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
                     if (error) console.error("QR Code Error:", error);
                 });
             } else {
