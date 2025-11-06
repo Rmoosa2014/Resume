@@ -27,7 +27,7 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
 .hidden { display: none; }
 .qr-code-unit.clickable { cursor: pointer; transition: transform 0.2s; border-radius: 0.5rem; padding-top: 0.5rem; padding-bottom: 0.5rem; }
 .qr-code-unit.clickable:hover { transform: scale(1.05); background-color: rgba(0,0,0,0.03); }
-.profile-modal-content { background-color: white; border-radius: 1rem; padding: 2rem 1.5rem 1.5rem 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; text-align: center; width: 90%; max-width: 300px; }
+.profile-modal-content { background-color: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; text-align: center; width: 90%; max-width: 300px; overflow: hidden; }
 .profile-img-clickable { cursor: pointer; transition: transform 0.2s ease; }
 .profile-img-clickable:hover { transform: scale(1.03); }
     </style>
@@ -130,10 +130,12 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
         <div id="profile-modal" class="qr-modal-overlay hidden">
             <span id="profile-modal-close-btn" class="qr-modal-close">&times;</span>
             <div class="profile-modal-content">
-                <img id="modal-profile-img" src="#" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mb-4 -mt-16">
-                <h1 id="modal-profile-name" class="text-xl font-bold text-gray-800 text-center break-words"></h1>
-                <p id="modal-profile-title" class="text-sm text-gray-600 text-center break-words mt-0.5"></p>
-                <a id="modal-profile-number" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600 mt-3"></a>
+                <img id="modal-profile-img" src="#" alt="Profile Picture" class="w-full h-auto">
+                <div class="p-4 w-full">
+                    <h1 id="modal-profile-name" class="text-xl font-bold text-gray-800 text-center break-words"></h1>
+                    <p id="modal-profile-title" class="text-sm text-gray-600 text-center break-words mt-0.5"></p>
+                    <a id="modal-profile-number" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600 mt-3"></a>
+                </div>
             </div>
         </div>
     </main>
