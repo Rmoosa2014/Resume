@@ -1,140 +1,37 @@
-<!DOCTYPE ahtml>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ahmed Maher - Portfolio</title>
-    
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Load Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
-    <!-- Load QR Code Generator Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
-    
-    <!-- CRITICAL: Load SheetJS/js-xlsx library to parse Excel files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
-        /* Base styles */
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            /* Center the 9:16 app frame */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #111827; /* Dark background for contrast */
-        }
-
-        /* The 9:16 mobile screen frame */
-        #app-frame {
-            position: relative;
-            width: 100%;
-            height: 95vh; /* Fill most of the vertical height */
-            max-width: 450px; /* Max width for larger screens */
-            aspect-ratio: 9 / 16; /* Enforce mobile aspect ratio */
-            background-color: #f0f0f0; /* Default bg */
-            border-radius: 1.5rem; /* Rounded corners for the "phone" */
-            box-shadow: 0 0 40px rgba(0,0,0,0.4);
-            overflow-y: scroll;
-            overflow-x: hidden;
-            /* Enable snap scrolling *within* this frame */
-            scroll-snap-type: y mandatory;
-            
-            /* --- HIDE SCROLLBAR --- */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        /* Hide scrollbar for WebKit browsers */
-        #app-frame::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Full-screen snap container class (relative to #app-frame) */
-        .image-snap-container {
-            width: 100%;
-            height: 100%;
-            scroll-snap-align: start;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            flex-shrink: 0;
-            position: relative;
-            overflow: hidden; /* Hide anything that spills */
-        }
-
-        /* Styling for the white contact card */
-        .contact-card {
-            background-color: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            /* CRITICAL FIX: Reduced bottom padding to only what's needed for content flow, 
-               QR code is now inside and placed with margins */
-            padding: 1.25rem 1rem 1.25rem 1rem; 
-            width: 90%;
-            max-width: 400px;
-            margin-top: 2rem;
-            /* Make this container relative so we can absolute position the QR code inside */
-            position: relative; 
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        
-        /* Removed absolute positioning */
-        #qr-code-container-fixed {
-            /* Now uses margin for spacing */
-            margin-top: 2.5rem; 
-            margin-bottom: 2.5rem; /* Creates the required gap at the very bottom */
-            display: flex; /* Ensures canvas is centered */
-            justify-content: center;
-            align-items: center;
-        }
-
-        .contact-icon {
-            font-size: 1.5rem; /* Adjusted for smaller frame */
-            color: #4a5568;
-        }
-        .contact-link {
-            font-size: 1rem; /* Adjusted for smaller frame */
-            color: #3182ce;
-            text-decoration: none;
-            margin-top: 0.25rem;
-            margin-bottom: 0; 
-            display: block;
-            word-break: break-all; /* Ensure long emails/links wrap */
-        }
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-        /* Styles for disabled social icons */
-        a[aria-disabled="true"] {
-            pointer-events: none;
-            cursor: default;
-        }
+html { scroll-behavior: smooth; }
+body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: #111827; }
+#app-frame { position: relative; width: 100%; height: 95vh; max-width: 450px; aspect-ratio: 9 / 16; background-color: #f0f0f0; border-radius: 1.5rem; box-shadow: 0 0 40px rgba(0,0,0,0.4); overflow-y: scroll; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
+#app-frame::-webkit-scrollbar { display: none; }
+.image-snap-container { width: 100%; height: 100%; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-shrink: 0; position: relative; overflow: hidden; }
+.contact-card { background-color: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 1.5rem 1rem 2rem 1rem; width: 90%; max-width: 400px; margin-top: 2rem; position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.contact-link { font-size: 1rem; color: #3182ce; text-decoration: none; margin-top: 0.25rem; margin-bottom: 0; display: block; word-break: break-all; }
+.contact-link:hover { text-decoration: underline; }
+.qr-code-unit { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; }
+.logo-link { display: flex; flex-direction: column; align-items: center; margin: 0.25rem 0.25rem; text-decoration: none; }
+.logo-link img { width: 40px; height: 40px; border-radius: 8px; object-fit: contain; }
+#social-links-container a i { font-size: 1.25rem; }
     </style>
     <script id="tailwind-config">
-        // Default color is #0269a6
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         'landing-bg-top': '#0269a6', 
                         'landing-bg-bottom': '#f0f0f0',
-                        'name-text': '#f3f4f6', /* White */
-                        'title-text': '#d1d5db', /* Light Grey */
-                        'gallery-bg': '#1f2937', // Dark bg for subsequent image slides
+                        'name-text': '#f3f4f6',
+                        'title-text': '#d1d5db',
+                        'gallery-bg': '#1f2937',
                     }
                 }
             }
@@ -143,419 +40,297 @@
 </head>
 
 <body>
-
-    <!-- This is the 9:16 container that holds the app -->
     <main id="app-frame">
-
-        <!-- SLIDE 1: LANDING PAGE -->
         <div id="landing-page-container" class="image-snap-container bg-gradient-to-b from-landing-bg-top to-landing-bg-bottom justify-start">
             
-            <!-- Top background color/image container -->
             <div id="landing-bg-top-container" class="absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0">
-                <!-- Image will be inserted here if background is a URL -->
             </div>
-            <!-- Bottom background color -->
             <div class="absolute bottom-0 left-0 w-full h-[50%] bg-landing-bg-bottom z-0"></div>
 
-            <!-- Profile Info (Outside Card) -->
             <div class="relative z-10 flex flex-col items-center mt-6 sm:mt-8 px-4"> 
                 <img id="main-profile-img" src="#" alt="Profile Picture" 
                      class="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white shadow-lg mb-2"
                      onerror="this.onerror=null; this.src='https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing';"
                 >
-                
-                <!-- CRITICAL FIX: Reduced font size for better fit -->
                 <h1 id="profile-name" class="text-xl font-bold text-name-text text-center break-words mt-0">Loading...</h1>
                 <p id="profile-title" class="text-sm text-title-text text-center break-words mt-0.5"></p>
             </div>
             
-            <!-- White Contact Card (All Contact Info Inside) -->
-            <div class="contact-card mt-4 mb-4"> 
+            <div class="contact-card mt-4 mb-4">  
                 
-                <!-- CONSOLIDATED: WhatsApp & WeChat Icons (Top Row) -->
                 <div class="flex justify-center w-full space-x-8 mt-2">
-                    <!-- WhatsApp Icon (Clickable link for CHAT) -->
                     <a id="whatsapp-icon-link" href="#" target="_blank" title="WhatsApp Chat" class="flex flex-col items-center">
-                        <i class="fab fa-whatsapp contact-icon text-green-500 mb-1"></i>
+                        <i class="fab fa-whatsapp contact-icon text-green-500 mb-1 text-2xl"></i>
                     </a>
-
-                    <!-- WeChat Icon (Clickable link for CHAT) -->
                     <a id="wechat-icon-link" href="#" target="_blank" title="WeChat Chat" class="flex flex-col items-center">
-                        <i class="fab fa-weixin contact-icon text-green-600 mb-1"></i>
+                        <i class="fab fa-weixin contact-icon text-green-600 mb-1 text-2xl"></i>
                     </a>
                 </div>
 
-                <!-- CONSOLIDATED: Single Contact Number (Centered below icons, CLICKABLE FOR CALL) -->
                 <div class="flex flex-col items-center mb-4"> 
-                    <!-- CRITICAL FIX: Wrapped number in <a> with tel: protocol -->
                     <a id="primary-contact-number-link" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600">
                         <span id="primary-contact-number">N/A</span>
                     </a>
                 </div>
 
-
-                <!-- Social Media Icons -->
                 <div id="social-links-container" class="flex flex-wrap justify-center gap-4 py-2 border-t border-b border-gray-100 w-full my-3">
-                    <!-- Icons injected here -->
                 </div>
 
-                <!-- UPDATED: Dedicated Web Link Block (Shows up to two web links) -->
                 <div id="main-web-link-block" class="flex flex-col items-center mb-3 w-full px-2"> 
                     <i class="fas fa-globe contact-icon text-gray-700 mb-1"></i>
-                    <!-- Container for 1 or 2 links -->
                     <div id="web-links-list" class="flex flex-col items-center w-full space-y-1">
-                        <!-- Links injected here -->
                     </div>
                 </div>
                 
-                <!-- Email -->
                 <div class="flex flex-col items-center mb-8"> 
                     <i class="fas fa-envelope contact-icon text-red-500 mb-1"></i>
                     <a id="email-link" href="#" class="contact-link"></a>
                 </div>
                 
-                <!-- QR Code Canvas (MOVED INSIDE CONTACT CARD AND NO LONGER ABSOLUTELY POSITIONED) -->
-                <div id="qr-code-container-fixed" style="width: 120px; height: 120px;">
-                    <canvas id="qr-code-canvas" width="120" height="120"></canvas>
+                <div class="flex justify-between w-full max-w-xs px-2 mt-4 mb-4">
+                    <div id="qr-code-profile-container" class="qr-code-unit">
+                        <div style="width: 120px; height: 120px;">
+                            <canvas id="qr-code-profile-canvas" width="120" height="120"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 font-semibold">Check Profile</p>
+                    </div>
+
+                    <div id="qr-code-wechat-container" class="qr-code-unit">
+                        <div style="width: 120px; height: 120px;">
+                            <canvas id="qr-code-wechat-canvas" width="120" height="120"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 font-semibold">We chat</p>
+                    </div>
                 </div>
-                
+
+                <div id="brand-logos-container" class="w-full mt-2 pt-4 border-t border-gray-100">
+                    <div id="brand-logos-links" class="flex flex-wrap justify-center gap-x-4">
+                    </div>
+                </div>
             </div>
-
-            <!-- Content outside the card -->
-            
         </div>
-
-        <!-- NOTE: Gallery code removed as requested -->
-
     </main>
     
     <script>
-        
-        // --- FUNCTION TO DYNAMICALLY UPDATE TAILWIND CONFIG AND RELOAD ---
-        function setTopBgColor(color) {
-            const configScript = document.getElementById('tailwind-config');
-            if (!configScript) return;
-
-            // Update the script content with the new color
-            let newConfig = configScript.textContent;
-            newConfig = newConfig.replace(/'landing-bg-top': '#0269a6'/, `'landing-bg-top': '${color}'`);
-
-            configScript.textContent = newConfig;
-
-            // Re-run Tailwind to pick up the new color definition
-            if (typeof tailwind !== 'undefined' && tailwind.config) {
-                 // Note: In a real environment, you'd re-initialize or trigger a JIT update.
-                 // For this single-file setup, we rely on the class being defined.
+        function renderQrCode(canvasId, url, text) {
+            const qrCanvas = document.getElementById(canvasId);
+            if (!qrCanvas) return;
+            const qrContainer = qrCanvas.parentElement.parentElement;
+            const qrTextElement = qrContainer.querySelector('p');
+            const qrCtx = qrCanvas.getContext('2d');
+            qrCtx.clearRect(0, 0, qrCanvas.width, qrCtx.height); 
+            if (url && QRCode) {
+                QRCode.toCanvas(qrCanvas, url, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
+                    if (error) console.error("QR Code Error:", error);
+                });
+                qrContainer.style.display = 'flex';
+                qrTextElement.textContent = text;
+            } else {
+                qrContainer.style.display = 'none';
             }
+            qrContainer.classList.add('qr-code-unit'); 
         }
-
-
-        // --- FUNCTION TO INJECT CONTACT DATA INTO LANDING PAGE ---
         function setupLandingPage(contactData) { 
-            // ----------------------------------------------------
-            // 1. DYNAMIC BACKGROUND LOGIC (NEW)
-            // ----------------------------------------------------
             const bgContainer = document.getElementById('landing-bg-top-container');
-            const newBgValue = contactData.landingBgTop || '#0269a6';
-            
+            const newBgValue = contactData.headerBG || '#0269a6';
             const isUrl = newBgValue.startsWith('http') || newBgValue.startsWith('/');
-
             if (isUrl) {
-                // If it's a URL, replace the container div content with an image
+                bgContainer.style.backgroundColor = '';
+                bgContainer.className = 'absolute top-0 left-0 w-full h-[50%] z-0';
                 bgContainer.innerHTML = `
                     <img src="${newBgValue}" 
                          alt="Background image" 
                          class="w-full h-full object-cover">
                 `;
             } else {
-                // If it's a color, update the Tailwind config
-                setTopBgColor(newBgValue);
-                // Ensure the container is a div and uses the Tailwind class
                 bgContainer.innerHTML = '';
-                bgContainer.className = 'absolute top-0 left-0 w-full h-[50%] bg-landing-bg-top z-0';
+                bgContainer.style.backgroundColor = newBgValue; 
+                bgContainer.className = 'absolute top-0 left-0 w-full h-[50%] z-0';
             }
-
-
-            // ----------------------------------------------------
-            // 2. PROFILE & CONTACT SETUP
-            // ----------------------------------------------------
-            document.getElementById('main-profile-img').src = contactData.mainImageUrl;
+            document.getElementById('main-profile-img').src = contactData.mainImageURI;
             document.getElementById('profile-name').textContent = contactData.name;
             document.getElementById('profile-title').textContent = contactData.title;
-
-            // --- Consolidated WhatsApp/WeChat/Number Block ---
             const primaryNumberEl = document.getElementById('primary-contact-number');
             const primaryNumberLink = document.getElementById('primary-contact-number-link');
             const waIconLink = document.getElementById('whatsapp-icon-link');
             const wcIconLink = document.getElementById('wechat-icon-link');
-
-            // Display the formatted WhatsApp number
             primaryNumberEl.textContent = contactData.whatsappNumber || 'N/A';
-            
-            // Set primary link for CALLING (tel: protocol)
-            const callingNumber = contactData.whatsappNumber.replace(/[^0-9+]/g, '');
+            const callingNumber = (contactData.whatsappNumber || '').replace(/[^0-9+]/g, '');
             primaryNumberLink.href = `tel:${callingNumber}`;
-            primaryNumberLink.title = `Call ${contactData.whatsappNumber}`;
-
-            // Set WhatsApp icon link for CHATTING (wa.me)
             waIconLink.href = contactData.whatsappUrl || 'javascript:void(0)';
-            if (!contactData.whatsappUrl) waIconLink.removeAttribute('target');
-
-            // Set WeChat icon link for CHATTING (WeChat URL)
+            if (!contactData.whatsappUrl) waIconLink.removeAttribute('target'); else waIconLink.setAttribute('target', '_blank');
             wcIconLink.href = contactData.wechatUrl || 'javascript:void(0)';
-            if (!contactData.wechatUrl) wcIconLink.removeAttribute('target');
-
-
-            // Update Email link and address
+            if (!contactData.wechatUrl) wcIconLink.removeAttribute('target'); else wcIconLink.setAttribute('target', '_blank');
             const emailLink = document.getElementById('email-link');
             emailLink.href = contactData.emailAddress ? `mailto:${contactData.emailAddress}` : '#';
             emailLink.textContent = contactData.emailAddress || 'N/A';
-
             const socialLinksContainer = document.getElementById('social-links-container');
-            socialLinksContainer.innerHTML = ''; // Clear existing content
-
-            // Map social keys to Font Awesome icons and colors
+            socialLinksContainer.innerHTML = ''; 
             const socialMap = [
-                { key: 'linkdin', icon: 'fab fa-linkedin', color: 'text-blue-700', label: 'LinkedIn' },
+                { key: 'linkedin', icon: 'fab fa-linkedin', color: 'text-blue-700', label: 'LinkedIn' },
                 { key: 'instagram', icon: 'fab fa-instagram', color: 'text-pink-500', label: 'Instagram' },
                 { key: 'behance', icon: 'fab fa-behance', color: 'text-blue-800', label: 'Behance' },
                 { key: 'youtube', icon: 'fab fa-youtube', color: 'text-red-600', label: 'YouTube' },
                 { key: 'facebook', icon: 'fab fa-facebook', color: 'text-blue-600', label: 'Facebook' },
             ];
-
-            // Render Social Media Links
             socialMap.forEach(map => {
                 const url = contactData.socialMedia[map.key];
-                const linkWrapper = document.createElement('a');
-                
-                linkWrapper.className = `p-1 rounded-full transition-transform`;
-                
-                const iconElement = document.createElement('i');
-                iconElement.className = `${map.icon} text-xl ${map.color}`; 
-                
-                if (url) {
+                if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                    const linkWrapper = document.createElement('a');
+                    linkWrapper.className = `p-1 rounded-full transition-transform hover:scale-110 hover:shadow-md`;
                     linkWrapper.href = url;
                     linkWrapper.target = "_blank";
                     linkWrapper.title = map.label;
-                    linkWrapper.classList.add('hover:scale-110', 'hover:shadow-md');
-                } else {
-                    linkWrapper.href = "javascript:void(0)";
-                    linkWrapper.setAttribute('aria-disabled', 'true');
-                    linkWrapper.classList.add('opacity-40');
-                    linkWrapper.title = `${map.label} (Not Provided)`;
+                    const iconElement = document.createElement('i');
+                    iconElement.className = `${map.icon} text-xl ${map.color}`; 
+                    linkWrapper.appendChild(iconElement);
+                    socialLinksContainer.appendChild(linkWrapper);
                 }
-
-                linkWrapper.appendChild(iconElement);
-                socialLinksContainer.appendChild(linkWrapper);
             });
-            
-            // Render Generic Web Links (up to 2)
             const webLinksList = document.getElementById('web-links-list');
             const mainWebLinkBlock = document.getElementById('main-web-link-block');
-            webLinksList.innerHTML = ''; // Clear list
-
+            webLinksList.innerHTML = ''; 
             if (contactData.webLinks && contactData.webLinks.length > 0) {
                 mainWebLinkBlock.classList.remove('hidden');
-
                 contactData.webLinks.slice(0, 2).forEach(link => {
                     const linkElement = document.createElement('a');
                     linkElement.href = link.href;
                     linkElement.target = "_blank";
-                    linkElement.textContent = link.href; 
+                    linkElement.textContent = link.text || link.href; 
                     linkElement.className = 'contact-link text-center w-full hover:underline mt-0 mb-0';
                     webLinksList.appendChild(linkElement);
                 });
-
             } else {
                 mainWebLinkBlock.classList.add('hidden');
             }
-            
-            // --- QR Code Handling ---
-            const qrCanvas = document.getElementById('qr-code-canvas');
-            const qrCtx = qrCanvas.getContext('2d');
-            
-            qrCtx.clearRect(0, 0, qrCanvas.width, qrCtx.height); 
-
-            if (contactData.qrCodeUrl && QRCode) {
-                // Generate the QR code
-                QRCode.toCanvas(qrCanvas, contactData.qrCodeUrl, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
-                    if (error) console.error("QR Code Error:", error);
+            renderQrCode('qr-code-profile-canvas', contactData.qrCodeUrl, 'Check Profile');
+            renderQrCode('qr-code-wechat-canvas', contactData.wechatQrCodeUrl, 'We chat');
+            const logosContainer = document.getElementById('brand-logos-container');
+            const logosLinksContainer = document.getElementById('brand-logos-links');
+            logosLinksContainer.innerHTML = '';
+            const brandLogosTitle = logosContainer.querySelector('p');
+            if (brandLogosTitle) brandLogosTitle.style.display = 'none'; 
+            if (contactData.brandLogoLinks && contactData.brandLogoLinks.length > 0) {
+                logosContainer.classList.remove('hidden');
+                contactData.brandLogoLinks.forEach(logo => {
+                    if (logo.url && (logo.url.startsWith('http://') || logo.url.startsWith('https://'))) {
+                        const linkElement = document.createElement('a');
+                        linkElement.href = logo.url; 
+                        linkElement.target = "_blank";
+                        linkElement.className = 'logo-link hover:scale-105 transition-transform';
+                        const img = document.createElement('img');
+                        img.src = logo.url;
+                        img.alt = logo.alt || 'Brand Logo';
+                        img.title = logo.alt || 'Brand Logo';
+                        linkElement.appendChild(img);
+                        logosLinksContainer.appendChild(linkElement);
+                    }
                 });
             } else {
-                // Draw a placeholder box and text if the URL is missing
-                qrCtx.fillStyle = '#f5f5f5'; 
-                qrCtx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
-                qrCtx.fillStyle = '#cccccc'; 
-                qrCtx.font = '14px Inter, sans-serif';
-                qrCtx.textAlign = 'center';
-                qrCtx.fillText('QR Code', qrCanvas.width / 2, 50);
-                qrCtx.fillText('Missing', qrCanvas.width / 2, 75);
+                 logosContainer.classList.add('hidden');
             }
         }
-
-        // --- CORE FUNCTION TO PARSE EXCEL DATA (Header Row + Data Row) ---
         function parseExcelData(data) {
             const contactData = {
                 webLinks: [],
-                socialMedia: {}
+                socialMedia: {},
+                brandLogoLinks: []
             };
-            
-            // Use xlsx to read the binary data
-            const workbook = XLSX.read(data, { type: 'binary' });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-
-            // Convert sheet data to an array of arrays (including headers)
-            const dataMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
-
-            if (dataMatrix.length < 2) {
-                console.error("Excel sheet must contain at least a header row (Row 1) and a data row (Row 2).");
-                return { contactData };
-            }
-
-            const rawHeaders = dataMatrix[0].map(h => String(h).trim());
-            const dataValues = dataMatrix[1].map(v => String(v).trim());
-            
-            const normalizedHeaders = rawHeaders.map(h => h.toLowerCase());
-
-            // --- Process Data by Header ---
-            
-            for (let i = 0; i < normalizedHeaders.length && i < dataValues.length; i++) {
-                const normalizedKey = normalizedHeaders[i];
-                const rawHeader = rawHeaders[i];
-                let value = dataValues[i] || ''; 
-                
-                if (!value) continue;
-
-                // 2.1. Handle Structured Web Links (now only looking for _href)
-                if (normalizedKey.startsWith('weblink') && normalizedKey.includes('_href')) {
-                    const match = normalizedKey.match(/weblink(\d+)_(href)/);
-                    if (match) {
-                        const index = parseInt(match[1], 10) - 1; 
-                        const prop = match[2]; // 'href'
-                        
-                        if (!(value.startsWith('http://') || value.startsWith('https://'))) {
-                            console.warn(`Skipping invalid URL for ${normalizedKey}: ${value}`);
-                            continue; 
-                        }
-                        
-                        if (!contactData.webLinks[index]) {
-                            contactData.webLinks[index] = {};
-                        }
-                        contactData.webLinks[index][prop] = value;
-                        contactData.webLinks[index]['text'] = value; 
+            try {
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const dataMatrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+                if (dataMatrix.length < 2) {
+                    return { contactData };
+                }
+                const rawHeaders = dataMatrix[0].map(h => String(h).trim());
+                const dataValues = dataMatrix[1].map(v => String(v).trim());
+                const getVal = (headerName) => {
+                    const normalizedTargetKey = headerName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const index = rawHeaders.findIndex(h => String(h).toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedTargetKey);
+                    return index !== -1 ? (dataValues[index] || '').trim() : '';
+                };
+                contactData.name = getVal('name');
+                contactData.title = getVal('title');
+                contactData.mainImageURI = getVal('mainImageURI');
+                contactData.emailAddress = getVal('emailAddress');
+                contactData.qrCodeUrl = getVal('qrCodeUrl');
+                contactData.wechatQrCodeUrl = getVal('WeChatQR');
+                contactData.headerBG = getVal('headerBG');
+                ['linkedin', 'instagram', 'behance', 'youtube', 'facebook'].forEach(key => {
+                    contactData.socialMedia[key] = getVal(key);
+                });
+                for (let i = 1; i <= 2; i++) {
+                    const text = getVal(`webLink${i}_text`); 
+                    const href = getVal(`webLink${i}_href`);
+                    if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+                        contactData.webLinks.push({ text: text || href, href });
                     }
                 }
-                // 2.2. Handle specific social media links
-                else if (['linkdin', 'instagram', 'behance', 'youtube', 'facebook'].includes(normalizedKey)) {
-                    contactData.socialMedia[normalizedKey] = value;
+                let rawWhatsappNumber = getVal('whatsappNumber');
+                if (rawWhatsappNumber) {
+                    let cleanedNumber = rawWhatsappNumber.replace(/[^0-9]/g, '');
+                    if (!rawWhatsappNumber.startsWith('+')) {
+                        cleanedNumber = '+' + cleanedNumber;
+                    }
+                    if (cleanedNumber.length >= 10) {
+                         contactData.whatsappNumber = cleanedNumber.replace(/(\+\d{3})(\d{4})(\d+)/, '$1 $2 $3');
+                    } else {
+                        contactData.whatsappNumber = cleanedNumber;
+                    }
+                    contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
                 }
-                // 2.3. All other fields (name, title, mainImageUrl, whatsappNumber, etc.)
-                else {
-                    // Use the original header name as the property key for the final object
-                    contactData[rawHeader] = value;
+                contactData.wechatUrl = contactData.wechatQrCodeUrl ? 'javascript:void(0)' : '';
+                let rawLogos = getVal('Brandlogos'); 
+                if (rawLogos) {
+                    rawLogos.split(',').forEach(item => {
+                        const parts = item.trim().split('|');
+                        if (parts.length >= 1) { 
+                            const url = parts[0].trim();
+                            const alt = parts.length > 1 ? parts[1].trim() : 'Brand Logo';
+                            if (url.startsWith('http://') || url.startsWith('https://')) {
+                                contactData.brandLogoLinks.push({ url, alt });
+                            }
+                        }
+                    });
                 }
-                
-                // 2.4. SPECIAL: Landing BG Top (Assuming Column O is the 15th column, index 14)
-                if (i === 14) { 
-                    contactData.landingBgTop = value;
-                }
+                return { contactData };
+            } catch (e) {
+                console.error("Error during Excel Parsing:", e);
+                return { contactData: { name: 'Parsing Error' } };
             }
-            
-            // --- FINALIZATION AND MAPPING ---
-            
-            contactData.name = contactData.name || '';
-            contactData.title = contactData.title || '';
-            contactData.mainImageUrl = contactData.mainImageUrl || contactData.mainimageurl || 'https://placehold.co/150x150/505050/FFFFFF?text=Photo+Missing'; 
-            
-            let rawWhatsappNumber = contactData.whatsappNumber || contactData.whatsappnumber || '';
-            
-            // NEW: FORMAT WHATSAPP NUMBER (+ country code)
-            if (rawWhatsappNumber) {
-                // Clean the number (remove all non-digit characters except + if present)
-                let cleanedNumber = rawWhatsappNumber.replace(/[^0-9]/g, '');
-                
-                // Prepend '+' if it doesn't already start with a '+'
-                if (!rawWhatsappNumber.startsWith('+')) {
-                    cleanedNumber = '+' + cleanedNumber;
-                }
-                
-                // Example formatting for display: +966 5355 31913
-                // This is a simple cosmetic format; the actual link uses the raw clean number.
-                
-                // Attempt to reformat for display (assumes SA code 966)
-                if (cleanedNumber.length >= 10 && cleanedNumber.startsWith('+966')) {
-                    // +966 5355 31913 (4 digits + 4 digits + 4 digits)
-                    contactData.whatsappNumber = `${cleanedNumber.substring(0, 4)} ${cleanedNumber.substring(4, 8)} ${cleanedNumber.substring(8)}`;
-                } else {
-                    contactData.whatsappNumber = cleanedNumber; // Use clean version if format is unknown
-                }
-                
-                // CRITICAL: The URL uses the clean number without spaces or +
-                contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
-            } else {
-                contactData.whatsappNumber = '';
-            }
-            
-            contactData.wechatNumber = contactData.wechatNumber || contactData.wechatnumber || ''; 
-            // Note: Direct WeChat linking is difficult, using a general share link as a fallback
-            contactData.wechatUrl = contactData.wechatNumber ? `weixin://dl/chat?${contactData.wechatNumber}` : ''; 
-
-            contactData.emailAddress = contactData.emailAddress || contactData.emailaddress || '';
-            contactData.qrCodeUrl = contactData.qrCodeUrl || contactData.qrcodeurl || '';
-
-            contactData.webLinks = contactData.webLinks.filter(link => link && link.text && link.href);
-            
-            console.log("Parsed Contact Data:", contactData);
-
-            return { contactData };
         }
-
-
-        // --- MAIN APPLICATION ENTRY POINT: FETCH AND RENDER ---
         window.onload = async function() {
-            
             const dataUrl = 'https://raw.githubusercontent.com/Rmoosa2014/Resume/main/ContactData.xlsx'; 
-
             try {
-                // 1. Fetch the binary Excel file data
                 const response = await fetch(dataUrl);
                 if (!response.ok) {
-                    throw new Error(`Failed to load data file. Status: ${response.status} ${response.statusText}. Please ensure the URL is correct and accessible.`);
+                    throw new Error(`Failed to load data file. Status: ${response.status} ${response.statusText}.`);
                 }
                 const arrayBuffer = await response.arrayBuffer();
                 const data = new Uint8Array(arrayBuffer);
-                
-                // 2. Convert to binary string required by SheetJS
                 let binaryString = '';
                 for (let i = 0; i < data.length; i++) {
                     binaryString += String.fromCharCode(data[i]);
                 }
-
-                // 3. Parse the Excel data
                 const { contactData } = parseExcelData(binaryString);
-
-                // 4. Render
                 if (contactData.name) {
                     setupLandingPage(contactData);
                 } else {
-                    throw new Error("Excel sheet loaded, but the 'name' field is missing or empty. Please ensure your sheet has a header row and a data row, and that one of the headers is 'name'.");
+                    throw new Error("Excel sheet loaded, but 'name' field is missing or empty.");
                 }
-
             } catch (error) {
                 console.error("Error loading and processing data:", error);
-                // Display a user-friendly error message on the screen
                 document.getElementById('app-frame').innerHTML = `
                     <div class="p-6 text-center text-red-700 bg-white rounded-xl shadow-lg m-4">
                         <strong class="text-xl">⚠️ Content Error ⚠️</strong>
-                        <p class="text-sm text-gray-600 mt-3">Could not load portfolio data from the Excel file.</p>
+                        <p class="text-sm text-gray-600 mt-3">Could not load portfolio data.</p>
                         <p class="text-xs text-gray-500 mt-4">Details: ${error.message}</p>
                     </div>
                 `;
             }
         };
-
     </script>
-
 </body>
 </html>
