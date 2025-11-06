@@ -135,12 +135,16 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                     <h1 id="modal-profile-name" class="text-xl font-bold text-gray-800 text-center break-words"></h1>
                     <p id="modal-profile-title" class="text-sm text-gray-600 text-center break-words mt-0.5"></p>
                     <a id="modal-profile-number" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600 mt-3"></a>
+                    <div id="modal-profile-bio-container" class="hidden mt-4 border-t pt-4">
+                        <p id="modal-profile-bio" class="text-sm text-gray-600 text-left whitespace-pre-wrap"></p>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
     
     <script>
+        let appContactData = {};
         function showQrModal(canvasId, text) {
             const modal = document.getElementById('qr-modal');
             const modalCanvas = document.getElementById('modal-qr-canvas');
@@ -183,6 +187,8 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
         function hideProfileModal() {
             const modal = document.getElementById('profile-modal');
             if (modal) modal.classList.add('hidden');
+            const bioContainer = document.getElementById('modal-profile-bio-container');
+            if (bioContainer) bioContainer.classList.add('hidden');
         }
         function renderQrCode(canvasId, url, text) {
             const qrCanvas = document.getElementById(canvasId);
@@ -314,7 +320,8 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             const contactData = {
                 webLinks: [],
                 socialMedia: {},
-                brandLogoLinks: []
+                brandLogoLinks: [],
+                bio: ''
             };
             try {
                 const workbook = XLSX.read(data, { type: 'binary' });
@@ -338,6 +345,7 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 contactData.qrCodeUrl = getVal('qrCodeUrl');
                 contactData.wechatQrCodeUrl = getVal('WeChatQR');
                 contactData.headerBG = getVal('headerBG');
+                contactData.bio = getVal('Bio');
                 ['linkedin', 'instagram', 'behance', 'youtube', 'facebook'].forEach(key => {
                     contactData.socialMedia[key] = getVal(key);
                 });
@@ -397,8 +405,9 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                     binaryString += String.fromCharCode(data[i]);
                 }
                 const { contactData } = parseExcelData(binaryString);
-                if (contactData.name) {
-                    setupLandingPage(contactData);
+                appContactData = contactData;
+                if (appContactData.name) {
+                    setupLandingPage(appContactData);
                 } else {
                     throw new Error("Excel sheet loaded, but 'name' field is missing or empty.");
                 }
@@ -427,6 +436,36 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             });
             document.getElementById('profile-modal-close-btn').addEventListener('click', hideProfileModal);
         };
+
+        function showProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (!modal) return;
+            const modalImg = document.getElementById('modal-profile-img');
+            const modalName = document.getElementById('modal-profile-name');
+            const modalTitle = document.getElementById('modal-profile-title');
+            const modalNumber = document.getElementById('modal-profile-number');
+            const bioContainer = document.getElementById('modal-profile-bio-container');
+            const bioText = document.getElementById('modal-profile-bio');
+
+            modalImg.src = document.getElementById('main-profile-img').src;
+            modalName.textContent = document.getElementById('profile-name').textContent;
+            modalTitle.textContent = document.getElementById('profile-title').textContent;
+            
+            const numberLink = document.getElementById('primary-contact-number-link');
+            const numberSpan = document.getElementById('primary-contact-number');
+            modalNumber.textContent = numberSpan.textContent;
+            modalNumber.href = numberLink.href;
+
+            if (appContactData.bio) {
+                bioText.textContent = appContactData.bio;
+                bioContainer.classList.remove('hidden');
+            } else {
+                bioText.textContent = '';
+                bioContainer.classList.add('hidden');
+            }
+            
+            modal.classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
