@@ -300,16 +300,14 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 logosContainer.classList.remove('hidden');
                 contactData.brandLogoLinks.forEach(logo => {
                     if (logo.url && (logo.url.startsWith('http://') || logo.url.startsWith('https://'))) {
-                        const linkElement = document.createElement('a');
-                        linkElement.href = logo.url; 
-                        linkElement.target = "_blank";
-                        linkElement.className = 'logo-link hover:scale-105 transition-transform';
+                        const logoWrapper = document.createElement('div');
+                        logoWrapper.className = 'logo-link';
                         const img = document.createElement('img');
                         img.src = logo.url;
                         img.alt = logo.alt || 'Brand Logo';
                         img.title = logo.alt || 'Brand Logo';
-                        linkElement.appendChild(img);
-                        logosLinksContainer.appendChild(linkElement);
+                        logoWrapper.appendChild(img);
+                        logosLinksContainer.appendChild(logoWrapper);
                     }
                 });
             } else {
