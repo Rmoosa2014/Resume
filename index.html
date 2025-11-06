@@ -481,12 +481,28 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
 
         async function shareQrLink() {
             if (!currentModalQrUrl || !navigator.share) return;
+
+            const modalCanvas = document.getElementById('modal-qr-canvas');
+            if (!modalCanvas) return;
+
             try {
-                await navigator.share({
-                    title: 'Check out this link',
-                    text: 'Here is the link I wanted to share:',
-                    url: currentModalQrUrl,
-                });
+                const blob = await new Promise(resolve => modalCanvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Check Profile',
+                        text: `Here's the link: ${currentModalQrUrl}`,
+                        url: currentModalQrUrl,
+                    });
+                } else {
+                    await navigator.share({
+                        title: 'Check Profile',
+                        text: 'Here is the link I wanted to share:',
+                        url: currentModalQrUrl,
+                    });
+                }
             } catch (err) {
                 console.error('Error sharing: ', err);
             }
