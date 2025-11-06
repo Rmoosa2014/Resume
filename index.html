@@ -21,6 +21,15 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
 .logo-link { display: flex; flex-direction: column; align-items: center; margin: 0.25rem 0.25rem; text-decoration: none; }
 .logo-link img { width: 40px; height: 40px; border-radius: 8px; object-fit: contain; }
 #social-links-container a i { font-size: 1.25rem; }
+.qr-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.qr-modal-content { background-color: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; }
+.qr-modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; color: white; cursor: pointer; line-height: 1; font-weight: 300; }
+.hidden { display: none; }
+.qr-code-unit.clickable { cursor: pointer; transition: transform 0.2s; border-radius: 0.5rem; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.qr-code-unit.clickable:hover { transform: scale(1.05); background-color: rgba(0,0,0,0.03); }
+.profile-modal-content { background-color: white; border-radius: 1rem; padding: 2rem 1.5rem 1.5rem 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; text-align: center; width: 90%; max-width: 300px; }
+.profile-img-clickable { cursor: pointer; transition: transform 0.2s ease; }
+.profile-img-clickable:hover { transform: scale(1.03); }
     </style>
     <script id="tailwind-config">
         tailwind.config = {
@@ -109,9 +118,70 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 </div>
             </div>
         </div>
+
+        <div id="qr-modal" class="qr-modal-overlay hidden">
+            <span id="qr-modal-close-btn" class="qr-modal-close">&times;</span>
+            <div class="qr-modal-content">
+                <canvas id="modal-qr-canvas" width="256" height="256"></canvas>
+                <p id="modal-qr-text" class="text-base text-gray-800 mt-3 font-semibold"></p>
+            </div>
+        </div>
+
+        <div id="profile-modal" class="qr-modal-overlay hidden">
+            <span id="profile-modal-close-btn" class="qr-modal-close">&times;</span>
+            <div class="profile-modal-content">
+                <img id="modal-profile-img" src="#" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mb-4 -mt-16">
+                <h1 id="modal-profile-name" class="text-xl font-bold text-gray-800 text-center break-words"></h1>
+                <p id="modal-profile-title" class="text-sm text-gray-600 text-center break-words mt-0.5"></p>
+                <a id="modal-profile-number" href="#" class="contact-link font-bold break-words text-center text-lg text-blue-600 mt-3"></a>
+            </div>
+        </div>
     </main>
     
     <script>
+        function showQrModal(canvasId, text) {
+            const modal = document.getElementById('qr-modal');
+            const modalCanvas = document.getElementById('modal-qr-canvas');
+            const modalText = document.getElementById('modal-qr-text');
+            const sourceCanvas = document.getElementById(canvasId);
+            if (!modal || !modalCanvas || !modalText || !sourceCanvas) return;
+            const modalCtx = modalCanvas.getContext('2d');
+            modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+            const img = new Image();
+            img.onload = function() {
+                modalCtx.drawImage(img, 0, 0, modalCanvas.width, modalCanvas.height);
+            };
+            img.src = sourceCanvas.toDataURL();
+            modalText.textContent = text;
+            modal.classList.remove('hidden');
+        }
+        function hideQrModal() {
+            const modal = document.getElementById('qr-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+        function showProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (!modal) return;
+            const modalImg = document.getElementById('modal-profile-img');
+            const modalName = document.getElementById('modal-profile-name');
+            const modalTitle = document.getElementById('modal-profile-title');
+            const modalNumber = document.getElementById('modal-profile-number');
+
+            modalImg.src = document.getElementById('main-profile-img').src;
+            modalName.textContent = document.getElementById('profile-name').textContent;
+            modalTitle.textContent = document.getElementById('profile-title').textContent;
+            
+            const numberLink = document.getElementById('primary-contact-number-link');
+            const numberSpan = document.getElementById('primary-contact-number');
+            modalNumber.textContent = numberSpan.textContent;
+            modalNumber.href = numberLink.href;
+            
+            modal.classList.remove('hidden');
+        }
+        function hideProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (modal) modal.classList.add('hidden');
+        }
         function renderQrCode(canvasId, url, text) {
             const qrCanvas = document.getElementById(canvasId);
             if (!qrCanvas) return;
@@ -119,12 +189,16 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             const qrTextElement = qrContainer.querySelector('p');
             const qrCtx = qrCanvas.getContext('2d');
             qrCtx.clearRect(0, 0, qrCanvas.width, qrCtx.height); 
+            qrContainer.classList.remove('clickable');
+            qrContainer.onclick = null;
             if (url && QRCode) {
                 QRCode.toCanvas(qrCanvas, url, { width: 120, margin: 1, errorCorrectionLevel: 'H' }, function (error) {
                     if (error) console.error("QR Code Error:", error);
                 });
                 qrContainer.style.display = 'flex';
                 qrTextElement.textContent = text;
+                qrContainer.classList.add('clickable');
+                qrContainer.onclick = () => showQrModal(canvasId, text);
             } else {
                 qrContainer.style.display = 'none';
             }
@@ -147,7 +221,11 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 bgContainer.style.backgroundColor = newBgValue; 
                 bgContainer.className = 'absolute top-0 left-0 w-full h-[50%] z-0';
             }
-            document.getElementById('main-profile-img').src = contactData.mainImageURI;
+            const profileImg = document.getElementById('main-profile-img');
+            profileImg.src = contactData.mainImageURI;
+            profileImg.classList.add('profile-img-clickable');
+            profileImg.onclick = showProfileModal;
+
             document.getElementById('profile-name').textContent = contactData.name;
             document.getElementById('profile-title').textContent = contactData.title;
             const primaryNumberEl = document.getElementById('primary-contact-number');
@@ -277,9 +355,11 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                     if (cleanedNumber.length >= 10) {
                          contactData.whatsappNumber = cleanedNumber.replace(/(\+\d{3})(\d{4})(\d+)/, '$1 $2 $3');
                     } else {
-                        contactData.whatsappNumber = cleanedNumber;
+                        contactData.whatsappNumber = cleaned.length > 0 ? cleanedNumber : '';
                     }
-                    contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
+                    if(cleanedNumber.length > 1) {
+                        contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
+                    }
                 }
                 contactData.wechatUrl = contactData.wechatQrCodeUrl ? 'javascript:void(0)' : '';
                 let rawLogos = getVal('Brandlogos'); 
@@ -302,8 +382,8 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             }
         }
         window.onload = async function() {
-            const dataUrl = 'https://raw.githubusercontent.com/Rmoosa2014/Resume/main/ContactData.xlsx'; 
             try {
+                const dataUrl = 'https://raw.githubusercontent.com/Rmoosa2014/Resume/main/ContactData.xlsx'; 
                 const response = await fetch(dataUrl);
                 if (!response.ok) {
                     throw new Error(`Failed to load data file. Status: ${response.status} ${response.statusText}.`);
@@ -330,6 +410,20 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                     </div>
                 `;
             }
+
+            document.getElementById('qr-modal').addEventListener('click', function(e) {
+                if (e.target.id === 'qr-modal') {
+                    hideQrModal();
+                }
+            });
+            document.getElementById('qr-modal-close-btn').addEventListener('click', hideQrModal);
+
+            document.getElementById('profile-modal').addEventListener('click', function(e) {
+                if (e.target.id === 'profile-modal') {
+                    hideProfileModal();
+                }
+            });
+            document.getElementById('profile-modal-close-btn').addEventListener('click', hideProfileModal);
         };
     </script>
 </body>
