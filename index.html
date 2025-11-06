@@ -30,6 +30,8 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
 .profile-modal-content { background-color: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; text-align: center; width: 90%; max-width: 300px; overflow: hidden; }
 .profile-img-clickable { cursor: pointer; transition: transform 0.2s ease; }
 .profile-img-clickable:hover { transform: scale(1.03); }
+.qr-modal-btn { background-color: #f3f4f6; color: #1f2937; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.5rem; display: inline-flex; align-items: center; transition: background-color 0.2s; }
+.qr-modal-btn:hover { background-color: #e5e7eb; }
     </style>
     <script id="tailwind-config">
         tailwind.config = {
@@ -124,6 +126,15 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             <div class="qr-modal-content">
                 <canvas id="modal-qr-canvas" width="256" height="256"></canvas>
                 <p id="modal-qr-text" class="text-base text-gray-800 mt-3 font-semibold"></p>
+                <div id="copy-success-msg" class="text-sm text-green-600 mt-2 hidden">Link copied to clipboard!</div>
+                <div class="flex space-x-4 mt-4">
+                    <button id="qr-copy-btn" class="qr-modal-btn">
+                        <i class="fas fa-copy mr-2"></i>Copy Link
+                    </button>
+                    <button id="qr-share-btn" class="qr-modal-btn hidden">
+                        <i class="fas fa-share mr-2"></i>Share
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -145,12 +156,14 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
     
     <script>
         let appContactData = {};
-        function showQrModal(canvasId, text) {
+        let currentModalQrUrl = '';
+        function showQrModal(canvasId, text, url) {
             const modal = document.getElementById('qr-modal');
             const modalCanvas = document.getElementById('modal-qr-canvas');
             const modalText = document.getElementById('modal-qr-text');
             const sourceCanvas = document.getElementById(canvasId);
             if (!modal || !modalCanvas || !modalText || !sourceCanvas) return;
+            currentModalQrUrl = url;
             const modalCtx = modalCanvas.getContext('2d');
             modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
             const img = new Image();
@@ -160,6 +173,13 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
             img.src = sourceCanvas.toDataURL();
             modalText.textContent = text;
             modal.classList.remove('hidden');
+            const shareBtn = document.getElementById('qr-share-btn');
+            if (navigator.share) {
+                shareBtn.classList.remove('hidden');
+            } else {
+                shareBtn.classList.add('hidden');
+            }
+            document.getElementById('copy-success-msg').classList.add('hidden');
         }
         function hideQrModal() {
             const modal = document.getElementById('qr-modal');
@@ -206,7 +226,7 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 qrContainer.style.display = 'flex';
                 qrTextElement.textContent = text;
                 qrContainer.classList.add('clickable');
-                qrContainer.onclick = () => showQrModal(canvasId, text);
+                qrContainer.onclick = () => showQrModal(canvasId, text, url);
             } else {
                 qrContainer.style.display = 'none';
             }
@@ -363,10 +383,12 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                     if (cleanedNumber.length >= 10) {
                          contactData.whatsappNumber = cleanedNumber.replace(/(\+\d{3})(\d{4})(\d+)/, '$1 $2 $3');
                     } else {
-                        contactData.whatsappNumber = cleaned.length > 0 ? cleanedNumber : '';
+                        contactData.whatsappNumber = cleanedNumber.length > 0 ? cleanedNumber : '';
                     }
                     if(cleanedNumber.length > 1) {
                         contactData.whatsappUrl = `https://wa.me/${cleanedNumber.replace('+', '').replace(/\s/g, '')}`; 
+                    } else {
+                        contactData.whatsappUrl = '';
                     }
                 }
                 contactData.wechatUrl = contactData.wechatQrCodeUrl ? 'javascript:void(0)' : '';
@@ -433,7 +455,42 @@ body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; a
                 }
             });
             document.getElementById('profile-modal-close-btn').addEventListener('click', hideProfileModal);
+            document.getElementById('qr-copy-btn').addEventListener('click', copyQrLink);
+            document.getElementById('qr-share-btn').addEventListener('click', shareQrLink);
         };
+
+        function copyQrLink() {
+            if (!currentModalQrUrl) return;
+            const textArea = document.createElement("textarea");
+            textArea.value = currentModalQrUrl;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                const msg = document.getElementById('copy-success-msg');
+                msg.classList.remove('hidden');
+                setTimeout(() => { msg.classList.add('hidden'); }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        async function shareQrLink() {
+            if (!currentModalQrUrl || !navigator.share) return;
+            try {
+                await navigator.share({
+                    title: 'Check out this link',
+                    text: 'Here is the link I wanted to share:',
+                    url: currentModalQrUrl,
+                });
+            } catch (err) {
+                console.error('Error sharing: ', err);
+            }
+        }
 
         function showProfileModal() {
             const modal = document.getElementById('profile-modal');
